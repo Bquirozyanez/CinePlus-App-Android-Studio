@@ -1,6 +1,5 @@
 package com.example.cineplus.navigation
 
-// Define los posibles eventos de navegación
 sealed class NavigationEvent {
 
     data class NavigateTo(

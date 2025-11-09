@@ -17,215 +17,220 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import com.example.cineplus.viewmodel.UsuarioViewModel
+import com.example.cineplus.viewmodel.RegisterViewModel
+import kotlinx.coroutines.delay
 
-//preview para ver como se ve
-@Preview(widthDp = 360, heightDp = 800, showBackground = true)
 @Composable
-private fun RegisterScreenPreview() {
-    RegisterScreen()
-}
+fun RegisterScreen(
+    navController: NavController,
+    viewModel: UsuarioViewModel
+) {
+    val estado by viewModel.estado.collectAsState()
 
-//composable principal
-@Composable
-fun RegisterScreen() {
-    RegisterContent()
-}
+    //viewModel para conectarse con la API
+    val registerViewModel: RegisterViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+    val isLoading by registerViewModel.isLoading.collectAsState()
+    val isSuccess by registerViewModel.isSuccess.collectAsState()
+    val error by registerViewModel.error.collectAsState()
 
-//lo q se ve en la pantalla de registro
-@Composable
-private fun RegisterContent() {
-    var username by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var repeatPassword by remember { mutableStateOf("") }
+    //si el registro fue exitoso, navegar tras un breve retraso
+    LaunchedEffect(isSuccess) {
+        if (isSuccess == true) {
+            delay(1500)
+            navController.navigate("resumen")
+            registerViewModel.resetState()
+        }
+    }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFE8F0FF)), // mismo fondo celeste suave
-        contentAlignment = Alignment.Center
+            .background(Color(0xFFEAF0FF))
+            .padding(16.dp)
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth(0.9f)
-                .clip(RoundedCornerShape(40.dp)) // misma tarjeta redondeada
-                .background(Color(0xFFF5F8FF))
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
 
-            //icono usuario (mismo que en ProfileScreen)
+            // Icono superior con degradado
             Box(
                 modifier = Modifier
-                    .size(96.dp)
+                    .size(80.dp)
                     .clip(CircleShape)
                     .background(
                         Brush.verticalGradient(
-                            listOf(
-                                Color(0xFF4B8CFF),
-                                Color(0xFF67D7C4)
-                            )
+                            colors = listOf(Color(0xFF3F51B5), Color(0xFF81C784))
                         )
                     ),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = Icons.Filled.Person,
+                    imageVector = Icons.Default.Person,
                     contentDescription = "Usuario",
-                    tint = Color.White,
-                    modifier = Modifier.size(56.dp)
+                    tint = Color.White
                 )
             }
 
-            Spacer(Modifier.height(24.dp))
-
-            //titulo principal
             Text(
-                text = "REGISTRARSE",
-                style = MaterialTheme.typography.labelLarge,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF4353FF)
+                text = "Crear cuenta",
+                color = Color(0xFF3F51B5),
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold
             )
 
-            Spacer(Modifier.height(4.dp))
-
-            Text(
-                text = "Crea tu cuenta para continuar con CinePlus",
-                style = MaterialTheme.typography.bodyMedium,
-                color = Color(0xFF7A88C6)
-            )
-
-            Spacer(Modifier.height(24.dp))
-
-            //usuario
-            Text(
-                text = "USUARIO",
-                style = MaterialTheme.typography.labelLarge,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF4353FF)
-            )
-            Spacer(Modifier.height(6.dp))
-
-            TextField(
-                value = username,
-                onValueChange = { username = it },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp),
-                singleLine = true,
-                shape = RoundedCornerShape(26.dp),
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White,
-                    disabledContainerColor = Color.White,
-                    errorContainerColor = Color.White,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
-                    disabledIndicatorColor = Color.Transparent,
-                    errorIndicatorColor = Color.Transparent
-                )
-            )
-
-            Spacer(Modifier.height(16.dp))
-
-            //contraseña
-            Text(
-                text = "CONTRASEÑA",
-                style = MaterialTheme.typography.labelLarge,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF4353FF)
-            )
-            Spacer(Modifier.height(6.dp))
-
-            TextField(
-                value = password,
-                onValueChange = { password = it },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp),
-                singleLine = true,
-                visualTransformation = PasswordVisualTransformation(),
-                shape = RoundedCornerShape(26.dp),
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White,
-                    disabledContainerColor = Color.White,
-                    errorContainerColor = Color.White,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
-                    disabledIndicatorColor = Color.Transparent,
-                    errorIndicatorColor = Color.Transparent
-                )
-            )
-
-            Spacer(Modifier.height(16.dp))
-
-            //repetir contraseña
-            Text(
-                text = "REPETIR CONTRASEÑA",
-                style = MaterialTheme.typography.labelLarge,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF4353FF)
-            )
-            Spacer(Modifier.height(6.dp))
-
-            TextField(
-                value = repeatPassword,
-                onValueChange = { repeatPassword = it },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp),
-                singleLine = true,
-                visualTransformation = PasswordVisualTransformation(),
-                shape = RoundedCornerShape(26.dp),
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White,
-                    disabledContainerColor = Color.White,
-                    errorContainerColor = Color.White,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
-                    disabledIndicatorColor = Color.Transparent,
-                    errorIndicatorColor = Color.Transparent
-                )
-            )
-
-            Spacer(Modifier.height(24.dp))
-
-            //boton de registrarse (solo visual x el momento)
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp)
-                    .clip(RoundedCornerShape(28.dp))
-                    .background(
-                        Brush.horizontalGradient(
-                            listOf(
-                                Color(0xFF4CAF50),
-                                Color(0xFF81C784)
-                            )
-                        )
-                    ),
-                contentAlignment = Alignment.Center
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(32.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White)
             ) {
-                Text(
-                    text = "REGISTRARSE",
-                    color = Color.White,
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.Bold
-                )
-            }
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    // Nombre
+                    OutlinedTextField(
+                        value = estado.nombre,
+                        onValueChange = viewModel::onNombreChange,
+                        label = { Text("Nombre", color = Color(0xFF3F51B5)) },
+                        isError = estado.errores.nombre != null,
+                        supportingText = {
+                            estado.errores.nombre?.let {
+                                Text(text = it, color = MaterialTheme.colorScheme.error)
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    )
 
-            Spacer(Modifier.height(12.dp))
+                    // Correo
+                    OutlinedTextField(
+                        value = estado.correo,
+                        onValueChange = viewModel::onCorreoChange,
+                        label = { Text("Correo electrónico", color = Color(0xFF3F51B5)) },
+                        isError = estado.errores.correo != null,
+                        supportingText = {
+                            estado.errores.correo?.let {
+                                Text(text = it, color = MaterialTheme.colorScheme.error)
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    )
 
-            //texto pa volver a iniciar sesión (solo visual)
-            TextButton(onClick = { /* sin acción por ahora */ }) {
-                Text(
-                    text = "¿Ya tienes cuenta? Iniciar sesión",
-                    color = Color(0xFF4353FF),
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.SemiBold
-                )
+                    // Contraseña
+                    OutlinedTextField(
+                        value = estado.clave,
+                        onValueChange = viewModel::onClaveChange,
+                        label = { Text("Contraseña", color = Color(0xFF3F51B5)) },
+                        visualTransformation = PasswordVisualTransformation(),
+                        isError = estado.errores.clave != null,
+                        supportingText = {
+                            estado.errores.clave?.let {
+                                Text(text = it, color = MaterialTheme.colorScheme.error)
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    // Dirección
+                    OutlinedTextField(
+                        value = estado.direccion,
+                        onValueChange = viewModel::onDireccionChange,
+                        label = { Text("Dirección", color = Color(0xFF3F51B5)) },
+                        isError = estado.errores.direccion != null,
+                        supportingText = {
+                            estado.errores.direccion?.let {
+                                Text(text = it, color = MaterialTheme.colorScheme.error)
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    //checkbox
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(
+                            checked = estado.aceptaTerminos,
+                            onCheckedChange = viewModel::onAceptarTerminosChange
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Acepto los términos y condiciones",
+                            color = Color(0xFF3F51B5)
+                        )
+                    }
+
+                    // botomn Registrar (con conexion a la API)
+                    Button(
+                        onClick = {
+                            if (viewModel.validarFormulario()) {
+                                registerViewModel.register(
+                                    email = estado.correo,
+                                    password = estado.clave,
+                                    name = estado.nombre
+                                )
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(55.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                        contentPadding = PaddingValues()
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .background(
+                                    brush = Brush.horizontalGradient(
+                                        colors = listOf(
+                                            Color(0xFF4CAF50),
+                                            Color(0xFF81C784)
+                                        )
+                                    ),
+                                    shape = RoundedCornerShape(50)
+                                )
+                                .fillMaxWidth()
+                                .height(55.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            when {
+                                isLoading -> CircularProgressIndicator(color = Color.White)
+                                isSuccess == true -> Text(
+                                    text = "Registro exitoso 🎉",
+                                    color = Color.White,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                else -> Text(
+                                    text = "Registrar",
+                                    color = Color.White,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                    }
+
+                    //mostrar error si ocurre
+                    error?.let {
+                        Text(
+                            text = it,
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(top = 8.dp)
+                        )
+                    }
+                }
             }
         }
     }
+}
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun RegisterScreenPreview() {
+    val navController = rememberNavController()
+    val fakeVm = UsuarioViewModel() // solo para preview
+    RegisterScreen(navController = navController, viewModel = fakeVm)
 }

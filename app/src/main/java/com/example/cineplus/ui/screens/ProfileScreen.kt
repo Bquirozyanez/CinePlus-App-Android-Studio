@@ -17,42 +17,53 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import com.example.cineplus.viewmodel.LoginViewModel
+import kotlinx.coroutines.delay
 
-//composable y preview pa ver como se ve
-@Preview(widthDp = 360, heightDp = 800, showBackground = true)
 @Composable
-private fun ProfileScreenPreview() {
-    ProfileScreen()
+fun ProfileScreen(navController: NavController? = null) {
+    LoginContent(navController)
 }
 
-//composable principal
 @Composable
-fun ProfileScreen() {
-    LoginContent()
-}
-
-//CONTENIDO DEL LOGIN
-@Composable
-private fun LoginContent() {
+private fun LoginContent(navController: NavController?) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+
+    val loginViewModel: LoginViewModel = viewModel()
+    val isLoading by loginViewModel.isLoading.collectAsState()
+    val isSuccess by loginViewModel.isSuccess.collectAsState()
+    val error by loginViewModel.error.collectAsState()
+
+    // Efecto: si login es exitoso, navegar tras un breve retraso
+    LaunchedEffect(isSuccess) {
+        if (isSuccess == true) {
+            delay(1000)
+            // Puedes cambiar "home" por la ruta que quieras
+            navController?.navigate("home")
+            loginViewModel.resetState()
+        }
+    }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFE8F0FF)), // recordatorio de fondo de color celeste suave (por si quiero usar el mismo color en otro elemento)
+            .background(Color(0xFFE8F0FF)),
         contentAlignment = Alignment.Center
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth(0.9f)
-                .clip(RoundedCornerShape(40.dp))     //la tarjeta mas redondeada
+                .clip(RoundedCornerShape(40.dp))
                 .background(Color(0xFFF5F8FF))
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            //icono usuario
+            // icono usuario
             Box(
                 modifier = Modifier
                     .size(96.dp)
@@ -140,34 +151,63 @@ private fun LoginContent() {
 
             Spacer(Modifier.height(24.dp))
 
-            //boton iniciar sesion (solo visual por el momento)
-            Box(
+            //boton iniciar sesion
+            Button(
+                onClick = {
+                    if (username.isNotBlank() && password.isNotBlank()) {
+                        loginViewModel.login(username, password)
+                    }
+                },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp)
-                    .clip(RoundedCornerShape(28.dp))
-                    .background(
-                        Brush.horizontalGradient(
-                            listOf(
-                                Color(0xFF4CAF50),
-                                Color(0xFF81C784)
-                            )
-                        )
-                    ),
-                contentAlignment = Alignment.Center
+                    .height(56.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                contentPadding = PaddingValues()
             ) {
+                Box(
+                    modifier = Modifier
+                        .background(
+                            Brush.horizontalGradient(
+                                listOf(Color(0xFF4CAF50), Color(0xFF81C784))
+                            ),
+                            shape = RoundedCornerShape(28.dp)
+                        )
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    when {
+                        isLoading -> CircularProgressIndicator(color = Color.White)
+                        isSuccess == true -> Text(
+                            text = "Bienvenido 🎉",
+                            color = Color.White,
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+                        else -> Text(
+                            text = "INICIAR SESIÓN",
+                            color = Color.White,
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
+
+            //mostrar error si ocurre
+            error?.let {
+                Spacer(Modifier.height(8.dp))
                 Text(
-                    text = "INICIAR SESIÓN",
-                    color = Color.White,
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.Bold
+                    text = it,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodyMedium
                 )
             }
 
             Spacer(Modifier.height(12.dp))
 
-            //registrarse(sin funcionar por el momento)
-            TextButton(onClick = { /* sin acción */ }) {
+            // registrarse (lleva a RegisterScreen)
+            TextButton(onClick = { navController?.navigate("registro") }) {
                 Text(
                     text = "¿No tienes cuenta? Registrarse",
                     color = Color(0xFF4353FF),
@@ -177,4 +217,11 @@ private fun LoginContent() {
             }
         }
     }
+}
+
+@Preview(widthDp = 360, heightDp = 800, showBackground = true)
+@Composable
+private fun ProfileScreenPreview() {
+    val navController = rememberNavController()
+    ProfileScreen(navController)
 }

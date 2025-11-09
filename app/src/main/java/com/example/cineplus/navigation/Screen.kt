@@ -1,12 +1,13 @@
 package com.example.cineplus.navigation
 
-// Define las rutas (pantallas) de tu app
+// las rutas
 sealed class Screen(val route: String) {
 
-    data object Home : Screen("home_page")
+    data object HomeScreen : Screen("home_page")
 
-    data object Profile : Screen("profile_page")
+    data object ProfileScreen : Screen("profile_page")
 
-    // Si luego agregas más pantallas, las añades aquí:
-    // data object Settings : Screen("settings_page")
+    data object RegisterScreen : Screen("register_page")
+
+
 }
